@@ -14,8 +14,6 @@
   :root { --gold:#ffd700; }
 
   /* === 全体レイアウト：左にゲーム、右に認証パネル === */
-  *{ box-sizing:border-box; }
-  html,body{ height:100%; }
   body{
     margin:0;
     background:#000;
@@ -33,7 +31,7 @@
   /* 左：ステージ（縮尺フィット） */
   .stage-wrap{
     position:relative;
-    flex:1 1 auto;
+    flex:1 1 auto;           /* 余白は全部こちらへ */
     width:100%;
     height:100%;
     overflow:hidden;
@@ -176,8 +174,8 @@
 
         <button class="cta" aria-label="運命を奏でる（スタート）">運命を奏でる</button>
 
-        <!--  同階層に置いたMP3（既定）。playsinlineでiOS対策 -->
-        <audio id="bgm" preload="auto" playsinline>
+        <!--  同階層に置いたMP3 -->
+        <audio id="bgm" preload="auto">
           <source src="beethoven_symphony5_1.mp3" type="audio/mpeg" />
         </audio>
 
@@ -219,28 +217,13 @@
           <button id="deleteUser" class="side-btn ghost">選択ユーザー削除</button>
         </div>
         <div class="current" id="currentUserView">未ログイン</div>
-
-        <hr style="width:100%; border:0; border-top:1px solid rgba(255,215,0,.15); margin:12px 0 6px;">
-        <h2 style="font-size:18px; margin:0 0 6px;">BGM</h2>
-        <div class="field">
-          <label>MP3ファイルを選択（端末内）：</label>
-          <input id="bgmFile" type="file" accept="audio/*" />
-        </div>
-        <div class="field">
-          <label>MP3のURLを入力（https://〜）：</label>
-          <div style="display:flex; gap:8px;">
-            <input id="bgmUrl" type="url" placeholder="https://example.com/fate.mp3" />
-            <button id="loadUrl" class="side-btn">読込</button>
-          </div>
-          <p class="note">※ GitHub Pagesなど外部URLはCORS制限で再生不可の場合があります。その場合はファイル選択を使ってください。</p>
-        </div>
       </div>
 
       <!-- 新規登録 -->
       <div id="pane-register" class="pane hidden">
         <div class="field">
           <label>表示名（偽名OK）</label>
-          <input id="regName" type="text" placeholder="例：有薄 / 朱優夏" />
+          <input id="regName" type="text" placeholder="例：あゆ🍀 / Kuma" />
         </div>
         <div class="field">
           <label>年齢</label>
@@ -272,19 +255,15 @@
   /* ===== ステージを常に画面内に収めるスケーリング ===== */
   const stage = document.getElementById('stage');
   const BASE_W = 1280, BASE_H = 720;
-
   function fitStage(){
-    // 左カラム（stage-wrap）の実サイズに対して縮尺計算
-    const wrap = stage.parentElement;
-    const sw = wrap.clientWidth;
-    const sh = wrap.clientHeight;
+    // 右のサイドバーを含めたウィンドウサイズに対して縮尺計算
+    const sw = stage.parentElement.clientWidth;  // 左カラムの幅だけを使う
+    const sh = stage.parentElement.clientHeight; // 左カラムの高さ
     const scale = Math.min(sw / BASE_W, sh / BASE_H);
     stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
   }
   window.addEventListener('resize', fitStage);
   window.addEventListener('orientationchange', fitStage);
-  // 右パネル開閉や内容で幅が変わる場合にも追従
-  new ResizeObserver(fitStage).observe(stage.parentElement);
   fitStage();
 
   /* ===== データ ===== */
@@ -299,43 +278,6 @@
   const bgm   = document.getElementById("bgm");
   const line = document.getElementById("resultLine");
   const summary = document.getElementById("resultSummary");
-
-  // BGM 取り込みUI
-  const bgmFile = document.getElementById('bgmFile');
-  const bgmUrl  = document.getElementById('bgmUrl');
-  const loadUrlBtn = document.getElementById('loadUrl');
-
-  // 直近URLを保存（ファイルObjectURLは保存しても次回使えない）
-  const BGM_URL_KEY = 'unmeiBgmUrl';
-  const lastUrl = localStorage.getItem(BGM_URL_KEY) || '';
-  if (lastUrl) bgmUrl.value = lastUrl;
-
-  function setBgmSrc(src, {persist=false} = {}){
-    if (!src) return;
-    try{
-      bgm.pause();
-    }catch(_){}
-    bgm.removeAttribute('src'); // 古いsourceをクリア
-    // <audio>直下の<source>要素を使わず、srcで一発指定（CORS状態がわかりやすい）
-    bgm.src = src;
-    bgm.load();
-    if (persist) localStorage.setItem(BGM_URL_KEY, src);
-  }
-
-  bgmFile.addEventListener('change', ()=>{
-    const f = bgmFile.files && bgmFile.files[0];
-    if (!f) return;
-    const url = URL.createObjectURL(f);
-    setBgmSrc(url, {persist:false});
-  });
-
-  loadUrlBtn.addEventListener('click', ()=>{
-    const url = (bgmUrl.value || '').trim();
-    if (!url) return;
-    try{ new URL(url); }catch(_){ alert('正しいURLを入力してください'); return; }
-    setBgmSrc(url, {persist:true});
-    alert('BGMのURLを読み込みました');
-  });
 
   const cues = {
     line:     1500,   // あなたの運命の相手は...
@@ -461,4 +403,120 @@
       const tab = btn.dataset.tab;
       paneLogin.classList.toggle('hidden', tab!=='login');
       paneRegister.classList.toggle('hidden', tab!=='register');
-      // パネル高さ変化でも
+    });
+  });
+
+  // 新規登録
+  doRegisterBtn.addEventListener('click', ()=>{
+    const name = (regName.value || '').trim();
+    if(!name){ alert('表示名（偽名OK）を入力してください'); return; }
+    const age = regAge.value ? Math.max(0, Math.min(150, Number(regAge.value)|0)) : "";
+    const user = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+      displayName: name,
+      age: age ? String(age) : "",
+      face: regFace.value || "",
+      mbti: regMBTI.value || "",
+      country: regCountry.value || ""
+    };
+    const list = loadUsers(); list.push(user); saveUsers(list);
+    setCurrentId(user.id);
+    refreshLoginSelect(); refreshCurrentView();
+    // フィールド軽くクリア
+    regName.value = ""; regAge.value=""; regFace.value=""; regMBTI.value=""; regCountry.value="";
+    alert('登録しました！ログイン状態になりました。');
+    // ログインタブへ
+    document.querySelector('.tab[data-tab="login"]').click();
+  });
+
+  // ログイン
+  doLoginBtn.addEventListener('click', ()=>{
+    const id = loginSelect.value;
+    if(!id){ alert('ユーザーを選択してください'); return; }
+    setCurrentId(id);
+    refreshCurrentView();
+    alert('ログインしました');
+  });
+
+  // ユーザー削除（選択中）
+  delUserBtn.addEventListener('click', ()=>{
+    const id = loginSelect.value;
+    if(!id){ alert('削除するユーザーを選択してください'); return; }
+    const list = loadUsers();
+    const idx = list.findIndex(u=>String(u.id)===String(id));
+    if(idx>=0){
+      if(!confirm(`本当に削除しますか？\n${list[idx].displayName}`)) return;
+      list.splice(idx,1); saveUsers(list);
+      if(getCurrentId()===id) setCurrentId(null);
+      refreshLoginSelect(); refreshCurrentView();
+      alert('削除しました');
+    }
+  });
+
+  // ログアウト
+  logoutBtn.addEventListener('click', ()=>{
+    setCurrentId(null);
+    refreshCurrentView();
+    alert('ログアウトしました');
+  });
+
+  /* ===== ゲーム進行 ===== */
+  async function runSequence(){
+    clearAll();
+    line.classList.remove("show");
+    summary.classList.remove("show");
+    summary.textContent="";
+    boxes.forEach(b=>b.classList.remove("stopped"));
+
+    // 音源準備待ち
+    await new Promise((resolve)=>{
+      const ok=()=>{ bgm.removeEventListener("canplaythrough", ok); resolve(); };
+      bgm.addEventListener("canplaythrough", ok, {once:true});
+      if (bgm.readyState>=3 || bgm.duration>0) resolve();
+      setTimeout(resolve, 600);
+    });
+
+    try{
+      bgm.pause();
+      bgm.currentTime = 0;
+      await bgm.play(); // クリック起点
+    }catch(e){
+      alert("再生がブロックされました。もう一度ボタンを押してください。");
+      return;
+    }
+
+    startSpin();
+    const start = performance.now();
+
+    schedule(()=>{ line.classList.add("show"); }, cues.line, start);
+
+    const picked = {height:"",face:"",mbti:"",age:"",country:""};
+    schedule(()=>{ picked.height  = stopBox(0); }, cues.height,  start);
+    schedule(()=>{ picked.face    = stopBox(1); }, cues.face,    start);
+    schedule(()=>{ picked.mbti    = stopBox(2); }, cues.mbti,    start);
+    schedule(()=>{ picked.age     = stopBox(3); }, cues.age,     start);
+    schedule(()=>{ picked.country = stopBox(4); }, cues.country, start);
+
+    schedule(()=>{
+      const label = `${picked.country} / ${picked.height} / ${picked.face} / ${picked.mbti} / ${picked.age}`;
+
+      // ログイン中ユーザーを結果に添える
+      const me = getCurrentUser();
+      const meLine = me
+        ? `\n\nあなた（${me.displayName} / ${me.age?me.age+'歳':'年齢:不明'} / ${me.face||'顔の系統:不明'} / ${me.mbti||'MBTI:不明'} / ${me.country||'国籍:不明'}）`
+        : '';
+
+      summary.textContent = `おめでとうございます！\n${label}\nが運命の相手です。${meLine}`;
+      summary.classList.add("show");
+    }, cues.summary, start);
+  }
+
+  let busy=false;
+  btn.addEventListener("click", async ()=>{
+    if (busy) return; busy=true;
+    try { await runSequence(); } finally { setTimeout(()=>busy=false, 22000); }
+  });
+})();
+</script>
+</body>
+</html>
