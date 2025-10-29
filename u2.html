@@ -81,6 +81,12 @@
     border-radius:10px; font-size:14px; text-align:left;
   }
 
+  /* 画像アップのプレビュー */
+  .avatar-preview{
+    width:96px; height:96px; border-radius:50%; border:2px solid var(--gold);
+    object-fit:cover; background:#000; box-shadow:0 0 12px rgba(216,189,106,.25);
+  }
+
   /* ====== メイン（スロット＋鍵盤） ====== */
   .stage-wrap{ position:relative; width:100vw; height:100vh; overflow:hidden; display:grid; place-items:center; }
   .stage{
@@ -144,6 +150,18 @@
   }
   .logout-btn:hover{ filter:brightness(1.1); }
 
+  /* ===== 紹介ページ ===== */
+  .cards{ display:flex; gap:18px; flex-wrap:wrap; justify-content:center; }
+  .card{
+    width:230px; background:#1b1212;
+    border:1px solid rgba(216,189,106,.35); border-radius:16px;
+    padding:12px; display:flex; flex-direction:column; align-items:center;
+    box-shadow:0 0 16px rgba(216,189,106,.15);
+  }
+  .card img{ width:160px; height:160px; border-radius:50%; object-fit:cover; border:2px solid var(--gold); }
+  .card .meta{ text-align:center; margin-top:8px; line-height:1.4; }
+  .card .btn{ margin-top:8px; width:100%; }
+
   @media (max-width:980px){ .auth-pane.active{ grid-template-columns:1fr; } }
 </style>
 </head>
@@ -193,10 +211,19 @@
           <label>MBTI</label>
           <select id="regMBTI"></select>
         </div>
-        <div class="field" style="grid-column:1/-1;">
+        <div class="field">
           <label>国籍</label>
           <select id="regCountry"></select>
         </div>
+        <div class="field" style="grid-column:1/-1;display:flex;align-items:center;gap:12px;">
+          <div>
+            <label>プロフィール画像（任意）</label>
+            <input id="regImg" type="file" accept="image/*" />
+            <div class="note">※ 端末内にのみ保存（localStorage）。</div>
+          </div>
+          <img id="regPreview" class="avatar-preview" alt="preview" />
+        </div>
+
         <div class="actions">
           <button id="doRegister" class="btn">登録する</button>
           <button id="toLogin" class="btn ghost">ログインへ</button>
@@ -249,7 +276,24 @@
   </div>
 </section>
 
-<!-- ===== ログアウト確認画面（※scriptの外に置く！） ===== -->
+<!-- ===== 紹介ページ ===== -->
+<section id="intro" class="screen hidden">
+  <div class="hero" style="gap:14px;">
+    <h1>運命の紹介</h1>
+    <div class="tagline" style="white-space:pre-wrap;">
+      これは偶然の旋律か、 それとも──運命のデュエットか。
+    </div>
+    <div class="divider"></div>
+    <div id="introCards" class="cards"></div>
+    <div class="divider"></div>
+    <div style="display:flex;gap:10px;">
+      <button id="backToMain" class="btn">もう一度占う</button>
+      <button id="backToHome" class="btn ghost">ホームへ戻る</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ログアウト確認画面 ===== -->
 <section id="logout" class="screen hidden">
   <div class="hero" style="gap:16px;">
     <h1 style="font-size:clamp(40px,9vw,88px);">ログアウト</h1>
@@ -267,11 +311,17 @@
   /* ===== 画面参照 ===== */
   const home   = document.getElementById('home');
   const main   = document.getElementById('main');
+  const intro  = document.getElementById('intro');
   const logoutScr = document.getElementById('logout');
 
-  function goMain(){ home.classList.add('hidden'); logoutScr.classList.add('hidden'); main.classList.remove('hidden'); requestAnimationFrame(fitStage); }
-  function goHome(){ main.classList.add('hidden'); logoutScr.classList.add('hidden'); home.classList.remove('hidden'); }
-  function goLogout(){ home.classList.add('hidden'); main.classList.add('hidden'); logoutScr.classList.remove('hidden'); }
+  function goMain(){ home.classList.add('hidden'); intro.classList.add('hidden'); logoutScr.classList.add('hidden'); main.classList.remove('hidden'); requestAnimationFrame(fitStage); }
+  function goHome(){ main.classList.add('hidden'); intro.classList.add('hidden'); logoutScr.classList.add('hidden'); home.classList.remove('hidden'); }
+  function goLogout(){ home.classList.add('hidden'); main.classList.add('hidden'); intro.classList.add('hidden'); logoutScr.classList.remove('hidden'); }
+  function goIntro(picked, top3){
+    main.classList.add('hidden');
+    intro.classList.remove('hidden');
+    renderIntro(top3);
+  }
 
   /* ===== ステージ縮尺 ===== */
   const stage = document.getElementById('stage');
@@ -291,9 +341,10 @@
   const faces = ["しお顔","ソース顔","とんこつ顔","砂糖顔","しょうゆ顔","塩バター顔"];
   const mbti  = ["INTJ","INFP","ENTP","ENFJ","ISTP","ISFP","ESTJ","ESFP","ISTJ","INFJ","ENTJ","ENFP","ISFJ","ESFJ","ESTP","INTP"];
   const countries = ["日本","韓国","フランス","イギリス","ドイツ","イタリア","アメリカ","ブラジル","エジプト","タイ","スペイン","カナダ","オーストラリア"];
+  const defaultAvatar = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="black"/><circle cx="150" cy="120" r="70" fill="#333"/><rect x="60" y="200" width="180" height="80" rx="40" fill="#333"/></svg>`);
 
   /* ===== Auth（localStorage） ===== */
-  const USERS_KEY="unmeiUsers", CURRENT_ID_KEY="unmeiCurrentUserId";
+  const USERS_KEY="unmeiUsers", CURRENT_ID_KEY="unmeiCurrentUserId", MSGS_KEY="unmeiMsgs";
   const $=(s)=>document.querySelector(s);
 
   const tabs=Array.from(document.querySelectorAll(".auth-tab"));
@@ -301,12 +352,17 @@
   const loginSelect=$("#loginUser"), doLoginBtn=$("#doLogin"), delUserBtn=$("#deleteUser");
   const curView=$("#currentUserView");
   const regName=$("#regName"), regAge=$("#regAge"), regFace=$("#regFace"), regMBTI=$("#regMBTI"), regCountry=$("#regCountry");
+  const regImg=$("#regImg"), regPreview=$("#regPreview");
   const doRegisterBtn=$("#doRegister"), toLoginBtn=$("#toLogin");
   const accountChip=document.getElementById("accountChip");
 
   const openLogoutBtn=document.getElementById('openLogout');
   const doLogoutBtn=document.getElementById('doLogout');
   const cancelLogoutBtn=document.getElementById('cancelLogout');
+
+  const introCards = document.getElementById('introCards');
+  const backToMain = document.getElementById('backToMain');
+  const backToHome = document.getElementById('backToHome');
 
   function fillOptions(el, arr){
     el.innerHTML = '<option value="">（未設定）</option>' + arr.map(v=>`<option value="${v}">${v}</option>`).join('');
@@ -347,21 +403,46 @@
   });
   toLoginBtn.addEventListener('click', ()=> tabs.find(t=>t.dataset.tab==='login').click());
 
-  doRegisterBtn.addEventListener('click', ()=>{
+  // プレビュー
+  regImg.addEventListener('change', ()=>{
+    const f=regImg.files && regImg.files[0];
+    if(!f){ regPreview.src=''; return; }
+    const reader=new FileReader();
+    reader.onload=e=>{ regPreview.src=e.target.result; };
+    reader.readAsDataURL(f);
+  });
+
+  // 画像→Base64 Promise
+  function fileToDataURL(file){
+    return new Promise((resolve,reject)=>{
+      const r=new FileReader();
+      r.onload=e=>resolve(e.target.result);
+      r.onerror=reject;
+      r.readAsDataURL(file);
+    });
+  }
+
+  // 登録
+  doRegisterBtn.addEventListener('click', async ()=>{
     const name=(regName.value||'').trim(); if(!name){ alert('表示名（偽名OK）を入力してください'); return; }
     const age=regAge.value ? Math.max(0,Math.min(150, Number(regAge.value)|0)) : "";
+    let imgData="";
+    const f=regImg.files && regImg.files[0];
+    if(f){ try{ imgData=await fileToDataURL(f); }catch(_){ imgData=""; } }
     const user={ id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),
-      displayName:name, age:age?String(age):"", face:regFace.value||"", mbti:regMBTI.value||"", country:regCountry.value||"" };
+      displayName:name, age:age?String(age):"", face:regFace.value||"", mbti:regMBTI.value||"", country:regCountry.value||"", img:imgData };
     const list=loadUsers(); list.push(user); saveUsers(list);
     setCurrentId(user.id); refreshLoginSelect(); refreshCurrentView();
     alert('登録しました！ゲーム画面へ移動します。'); goMain();
   });
 
+  // ログイン
   doLoginBtn.addEventListener('click', ()=>{
     const id=loginSelect.value; if(!id){ alert('ユーザーを選択してください'); return; }
     setCurrentId(id); refreshCurrentView(); alert('ログインしました。ゲーム画面へ移動します。'); goMain();
   });
 
+  // ユーザー削除
   delUserBtn.addEventListener('click', ()=>{
     const id=loginSelect.value; if(!id){ alert('削除するユーザーを選択してください'); return; }
     const list=loadUsers(); const idx=list.findIndex(u=>String(u.id)===String(id));
@@ -414,6 +495,45 @@
     return scored.slice(0,k);
   }
 
+  function renderIntro(top3){
+    introCards.innerHTML='';
+    if(!top3 || !top3.length){
+      introCards.innerHTML = '<div class="note">他の登録ユーザーがいません。ホームからユーザーを追加してください。</div>';
+      return;
+    }
+    top3.forEach(({u,score})=>{
+      const card=document.createElement('div');
+      card.className='card';
+      const imgSrc = u.img || defaultAvatar;
+      card.innerHTML = `
+        <img src="${imgSrc}" alt="${u.displayName}">
+        <div class="meta">
+          <strong>${u.displayName}</strong><br>
+          ${u.mbti || 'MBTI不明'} / ${u.face || '顔:不明'}<br>
+          ${u.country || '国籍:不明'}<br>
+          <small>マッチ度：${score}%</small>
+        </div>
+        <button class="btn send-btn" data-id="${u.id}">💌 メッセージを送る</button>
+      `;
+      introCards.appendChild(card);
+    });
+
+    // 送信
+    introCards.querySelectorAll('.send-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const tid = btn.dataset.id;
+        const msg = prompt('相手にメッセージを送ります：');
+        if(!msg) return;
+        const meId = getCurrentId();
+        const box = JSON.parse(localStorage.getItem(MSGS_KEY) || '{}');
+        box[tid] = box[tid] || [];
+        box[tid].push({ from: meId, text: msg, time: Date.now() });
+        localStorage.setItem(MSGS_KEY, JSON.stringify(box));
+        alert('メッセージを送信しました💌');
+      });
+    });
+  }
+
   async function runSequence(){
     clearAll(); line.classList.remove("show"); summary.classList.remove("show"); summary.textContent="";
     boxes.forEach(b=>b.classList.remove("stopped"));
@@ -442,25 +562,30 @@
       const me=getCurrentUser();
       const meLine=me?`\n\nあなた（${me.displayName} / ${me.age?me.age+'歳':'年齢:不明'} / ${me.face||'顔:不明'} / ${me.mbti||'MBTI:不明'} / ${me.country||'国籍:不明'}）`:"";
 
-      let top3Block='';
+      let top3Text='';
       if(me){
         const top3=rankTopMatches(me,3).filter(x=>x.u);
         if(top3.length){
           const lines=top3.map((it,i)=>{
             const u=it.u; return ` ${i+1}. ${u.displayName}（${u.mbti||'MBTI不明'} / ${u.face||'顔:不明'} / ${u.country||'国籍:不明'}） - マッチ度：${it.score}%`;
           }).join('\n');
-          top3Block=`\n\n🎼 運命の旋律を奏でた相手（上位3人）\n${lines}`;
-        }else{
-          top3Block=`\n\n💞 他の登録ユーザーがいません。`;
-        }
+          top3Text=`\n\n🎼 運命の旋律を奏でた相手（上位3人）\n${lines}`;
+        }else{ top3Text=`\n\n💞 他の登録ユーザーがいません。`; }
       }else{
-        top3Block=`\n\n💞 ログインして自分を登録すると、あなたに合う相手をご紹介できます。`;
+        top3Text=`\n\n💞 ログインして自分を登録すると、あなたに合う相手をご紹介できます。`;
       }
       const ending=`\n\nこれは偶然の旋律か、\nそれとも──運命のデュエットか。`;
 
-      summary.textContent=`おめでとうございます！\n${label}\nが運命の相手です。`+meLine+top3Block+ending;
+      summary.textContent=`おめでとうございます！\n${label}\nが運命の相手です。`+meLine+top3Text+ending;
       summary.classList.add("show");
     }, cues.summary, start);
+
+    // 自動で紹介ページへ（4秒後）
+    schedule(()=>{
+      const me=getCurrentUser();
+      const top3 = me ? rankTopMatches(me,3) : [];
+      goIntro(picked, top3);
+    }, cues.summary + 4000, start);
   }
 
   let busy=false;
@@ -468,6 +593,10 @@
     if(busy) return; busy=true;
     try{ await runSequence(); } finally{ setTimeout(()=>busy=false, 22000); }
   });
+
+  /* ===== 紹介ページ：戻る ===== */
+  backToMain.addEventListener('click', ()=> goMain());
+  backToHome.addEventListener('click', ()=> goHome());
 
   /* ===== ログアウト動線 ===== */
   openLogoutBtn.addEventListener('click', ()=> goLogout());
