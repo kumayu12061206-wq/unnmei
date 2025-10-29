@@ -1,3 +1,7 @@
+/UnmeiProject/
+├── Unmei.html
+└── beethoven_symphony5_1.mp3
+<audio id="fate-audio" src="beethoven_symphony5_1.mp3"></audio>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -5,26 +9,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Unmei - 出会いが鳴り、恋が奏でる運命</title>
 
-  <!-- ✅ Playfair Display を読み込み -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
     :root { --gold:#ffd700; }
-
     * { box-sizing: border-box; }
 
     body {
-      margin: 0;
-      height: 100vh;
-      background: radial-gradient(circle at center, #1c0d0d 0%, #000000 80%);
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      font-family: 'Playfair Display', serif; /* ✅ 統一フォント */
+      margin: 0; height: 100vh; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      background: radial-gradient(circle at center, #1c0d0d 0%, #000 80%);
+      font-family: 'Playfair Display', serif;
     }
 
     h1 {
@@ -48,88 +45,8 @@
       text-align: center;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(40px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes subtitle {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .keys {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 2px;
-      padding: 8px 0 10px;
-      pointer-events: none;
-    }
-
-    .key {
-      width: 64px;
-      height: 280px;
-      background: linear-gradient(to bottom, #fff, #ddd);
-      border: 1px solid #444;
-      border-radius: 4px;
-      box-shadow: 0 4px 10px rgba(255,255,255,0.08);
-      animation: play 6s infinite ease-in-out;
-      position: relative;
-    }
-
-    .key.black {
-      width: 42px;
-      height: 180px;
-      background: linear-gradient(to bottom, #111, #000);
-      position: relative;
-      top: 0;
-      z-index: 2;
-      margin-left: -21px;
-      margin-right: -21px;
-      animation: playBlack 6s infinite ease-in-out;
-      border-color:#222;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
-    }
-
-    @keyframes play {
-      0%, 100% { filter: brightness(1); }
-      50% { filter: brightness(1.6); }
-    }
-    @keyframes playBlack {
-      0%, 100% { filter: brightness(1); }
-      50% { filter: brightness(1.3); }
-    }
-
-    .flash { box-shadow: 0 0 22px rgba(255,215,0,0.9) !important; filter: brightness(2) saturate(1.2); }
-
-    button.cta {
-      position: relative;
-      margin-top: clamp(16px, 6vh, 100px);
-      background: linear-gradient(90deg, #8b0000, #b30000);
-      color: var(--gold);
-      border: 2px solid var(--gold);
-      padding: 14px 36px;
-      font-size: clamp(16px, 3.4vw, 24px);
-      border-radius: 12px;
-      cursor: pointer;
-      box-shadow: 0 0 25px rgba(255,215,0,0.35);
-      transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
-      text-shadow: 0 0 12px rgba(255,215,0,0.8);
-      z-index: 5;
-    }
-
-    button.cta:hover {
-      transform: translateY(-1px) scale(1.04);
-      box-shadow: 0 0 35px rgba(255,215,0,0.8);
-      filter: brightness(1.05);
-    }
-
-    button.cta:active {
-      transform: translateY(0) scale(0.98);
-      box-shadow: 0 0 22px rgba(255,215,0,0.6);
-    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes subtitle { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     .slot {
       position: absolute;
@@ -146,7 +63,6 @@
       padding: 0 8px;
       max-width: min(100vw, 900px);
     }
-
     @keyframes slotFade { to { opacity: 1; } }
 
     .slot-box {
@@ -169,6 +85,28 @@
 
     .spinning { filter: saturate(1.2) brightness(1.1); box-shadow: 0 0 18px rgba(255,215,0,0.6); }
     .stopped  { filter: none; }
+
+    button.cta {
+      position: relative;
+      margin-top: clamp(16px, 6vh, 100px);
+      background: linear-gradient(90deg, #8b0000, #b30000);
+      color: var(--gold);
+      border: 2px solid var(--gold);
+      padding: 14px 36px;
+      font-size: clamp(16px, 3.4vw, 24px);
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(255,215,0,0.35);
+      text-shadow: 0 0 12px rgba(255,215,0,0.8);
+      transition: 0.25s;
+      z-index: 5;
+    }
+
+    button.cta:hover {
+      transform: translateY(-1px) scale(1.04);
+      box-shadow: 0 0 35px rgba(255,215,0,0.8);
+      filter: brightness(1.05);
+    }
 
     .footer-note {
       position: absolute;
@@ -195,16 +133,10 @@
 
   <button class="cta">運命を奏でる</button>
 
-  <div class="keys">
-    <div class="key"></div><div class="key black"></div><div class="key"></div><div class="key black"></div>
-    <div class="key"></div><div class="key"></div><div class="key black"></div><div class="key"></div><div class="key black"></div>
-    <div class="key"></div><div class="key black"></div><div class="key"></div><div class="key"></div><div class="key black"></div>
-    <div class="key"></div><div class="key black"></div><div class="key"></div><div class="key"></div><div class="key black"></div>
-    <div class="key"></div><div class="key black"></div><div class="key"></div><div class="key black"></div>
-    <div class="key"></div><div class="key"></div><div class="key black"></div><div class="key"></div><div class="key black"></div><div class="key"></div>
-  </div>
-
   <div class="footer-note">© 2025 Unmei Project</div>
+
+  <!-- 🎵 Beethoven Symphony No.5 音源 -->
+  <audio id="fate-audio" src="beethoven_symphony5_1.mp3"></audio>
 
   <script>
   (function(){
@@ -212,8 +144,8 @@
     const mbti  = ["INTJ","INFP","ENTP","ENFJ","ISTP","ISFP","ESTJ","ESFP"];
     const countries = ["日本","韓国","フランス","イギリス","ドイツ","イタリア","アメリカ","ブラジル","エジプト","タイ"];
     const boxes = Array.from(document.querySelectorAll(".slot-box"));
-    const keys  = Array.from(document.querySelectorAll(".keys .key"));
     const btn   = document.querySelector(".cta");
+    const audio = document.getElementById("fate-audio");
 
     const resultText = document.createElement("div");
     resultText.textContent = "あなたの運命の相手は...";
@@ -254,70 +186,22 @@
       boxes[index].classList.add("stopped");
     }
 
-    let ac, master;
-    function initAudio(){
-      if (ac) return;
-      ac = new (window.AudioContext || window.webkitAudioContext)();
-      master = ac.createGain();
-      master.gain.value = 0.18;
-      master.connect(ac.destination);
-    }
+    btn.addEventListener("click", ()=>{
+      resultText.style.opacity = 0;
+      startSpin();
 
-    const motif = [
-      {freq:392, dur:0.28}, {rest:0.08},
-      {freq:392, dur:0.28}, {rest:0.08},
-      {freq:392, dur:0.28}, {rest:0.14},
-      {freq:311, dur:0.44}, {rest:0.32}
-    ];
+      // 🎵 運命 再生開始
+      audio.currentTime = 0;
+      audio.play();
 
-    function playTone(freq, start, dur, type="square"){
-      const osc = ac.createOscillator();
-      const g = ac.createGain();
-      osc.type = type;
-      osc.frequency.value = freq;
-      g.gain.setValueAtTime(0, start);
-      g.gain.linearRampToValueAtTime(1, start+0.02);
-      g.gain.linearRampToValueAtTime(0.0001, start+dur);
-      osc.connect(g); g.connect(master);
-      osc.start(start);
-      osc.stop(start+dur+0.02);
-    }
-
-    function playFateAndStopSequence(){
-      initAudio();
-      if (ac.state === "suspended") ac.resume();
-
-      const t0 = ac.currentTime + 0.05;
-      let cursor = t0;
-      let stopIndex = 0;
-
-      motif.forEach(step=>{
-        if (step.freq){
-          playTone(step.freq, cursor, step.dur, step.freq===311 ? "sawtooth" : "square");
-          const k = keys[Math.floor(Math.random()*keys.length)];
-          if (k){
-            setTimeout(()=>{ k.classList.add("flash"); setTimeout(()=>k.classList.remove("flash"), 120); }, (cursor - ac.currentTime)*1000);
-          }
-          setTimeout(()=>{ if (stopIndex < boxes.length){ stopOne(stopIndex++); } }, (cursor + step.dur - ac.currentTime)*1000);
-          cursor += step.dur;
-        } else if (step.rest){ cursor += step.rest; }
+      // 音のタイミングに合わせて止める
+      const delays = [1500, 3000, 4200, 5500, 6800];
+      delays.forEach((t, i)=>{
+        setTimeout(()=> stopOne(i), t);
       });
 
-      setTimeout(()=>{
-        while (stopIndex < boxes.length){ stopOne(stopIndex++); }
-        setTimeout(()=>{ resultText.style.opacity = 1; }, 300);
-      }, (cursor - ac.currentTime + 0.30)*1000);
-    }
-
-    let running = false;
-    btn.addEventListener("click", ()=>{
-      if (running) return;
-      running = true;
-      resultText.style.opacity = 0;
-      boxes.forEach(b=>b.classList.remove("stopped"));
-      startSpin();
-      playFateAndStopSequence();
-      setTimeout(()=>{ running = false; }, 6000);
+      // 結果表示
+      setTimeout(()=> resultText.style.opacity = 1, 7300);
     });
   })();
   </script>
