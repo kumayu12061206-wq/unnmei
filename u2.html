@@ -20,10 +20,12 @@
     overflow:hidden;
   }
 
-  /* ====== 2画面構成 ====== */
-  .screen{ position:absolute; inset:0; display:grid; place-items:center;
-           background:radial-gradient(1200px 600px at 50% -10%, #180e0e 0%, #000 70%);
-           opacity:1; transition:opacity .5s ease, transform .5s ease; }
+  /* ====== 共通：画面 ====== */
+  .screen{
+    position:absolute; inset:0; display:grid; place-items:center;
+    background:radial-gradient(1200px 600px at 50% -10%, #180e0e 0%, #000 70%);
+    opacity:1; transition:opacity .5s ease, transform .5s ease;
+  }
   .hidden{ opacity:0; pointer-events:none; transform:scale(.98); }
 
   /* ====== ホーム（ヒーロー） ====== */
@@ -34,37 +36,23 @@
   }
   .hero h1{
     font-size: clamp(64px, 12vw, 132px);
-    margin:0;
-    letter-spacing: 4px;
-    color:var(--gold);
-    text-shadow: 0 0 28px var(--gold-glow);
+    margin:0; letter-spacing:4px; color:var(--gold);
+    text-shadow:0 0 28px var(--gold-glow);
   }
   .tagline{
-    display:inline-block;
-    padding:10px 16px;
-    font-size: clamp(16px, 2.6vw, 28px);
-    letter-spacing:3px;
-    color:var(--gold);
-    background:rgba(0,0,0,.35);
-    border:1px solid rgba(216,189,106,.35);
-    border-radius:12px;
-    backdrop-filter: blur(2px);
+    display:inline-block; padding:10px 16px;
+    font-size:clamp(16px, 2.6vw, 28px); letter-spacing:3px; color:var(--gold);
+    background:rgba(0,0,0,.35); border:1px solid rgba(216,189,106,.35);
+    border-radius:12px; backdrop-filter:blur(2px);
   }
-  .divider{
-    width:100%; height:1px;
-    background:linear-gradient(90deg, transparent, rgba(216,189,106,.4), transparent);
-    margin-top:8px;
-  }
+  .divider{ width:100%; height:1px;
+    background:linear-gradient(90deg,transparent,rgba(216,189,106,.4),transparent); }
 
-  /* ログイン/登録パネル（ヒーロー下に配置） */
   .auth{
-    margin-top:14px;
-    width:min(900px, 92vw);
-    background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.2));
-    border:1px solid rgba(216,189,106,.25);
-    border-radius:16px;
-    padding:18px;
-    box-shadow: 0 10px 40px rgba(0,0,0,.45), inset 0 0 40px rgba(216,189,106,.07);
+    margin-top:14px; width:min(900px,92vw);
+    background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.2));
+    border:1px solid rgba(216,189,106,.25); border-radius:16px; padding:18px;
+    box-shadow:0 10px 40px rgba(0,0,0,.45), inset 0 0 40px rgba(216,189,106,.07);
   }
   .auth-tabs{ display:flex; gap:10px; margin-bottom:12px; }
   .auth-tab{
@@ -88,18 +76,13 @@
   }
   .btn.ghost{ border-color:#666; color:#ddd; background:#111; }
   .note{ margin:4px 0 0; font-size:12px; opacity:.8; grid-column:1/-1; }
-
   .current{
-    margin-top:10px; padding:10px;
-    border:1px dashed rgba(216,189,106,.35); border-radius:10px; font-size:14px;
-    text-align:left;
+    margin-top:10px; padding:10px; border:1px dashed rgba(216,189,106,.35);
+    border-radius:10px; font-size:14px; text-align:left;
   }
 
   /* ====== メイン（スロット＋鍵盤） ====== */
-  .stage-wrap{
-    position:relative; width:100vw; height:100vh; overflow:hidden;
-    display:grid; place-items:center;
-  }
+  .stage-wrap{ position:relative; width:100vw; height:100vh; overflow:hidden; display:grid; place-items:center; }
   .stage{
     position:absolute; left:50%; top:50%;
     width:1280px; height:720px; transform-origin:center;
@@ -147,21 +130,26 @@
   .result-summary{ top:520px; font-size:22px; }
   .show{ opacity:1; }
 
-  /* 右上アカウント表示（ログイン名） */
+  /* 右上：アカウント名とログアウト */
   .account-chip{
     position:absolute; right:16px; top:14px; font-size:14px;
     background:#1b1212; border:1px solid rgba(216,189,106,.35); border-radius:999px;
     padding:6px 12px; box-shadow:0 0 16px rgba(216,189,106,.15);
   }
-
-  @media (max-width: 980px){
-    .auth-pane.active{ grid-template-columns:1fr; }
+  .logout-btn{
+    position:absolute; right:16px; top:50px; font-size:14px;
+    padding:8px 12px; border-radius:10px; border:1px solid var(--gold);
+    background:#1b1212; color:var(--gold); cursor:pointer;
+    box-shadow:0 0 16px rgba(216,189,106,.15);
   }
+  .logout-btn:hover{ filter:brightness(1.1); }
+
+  @media (max-width:980px){ .auth-pane.active{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
 
-<!-- ===== ホーム画面 ===== -->
+<!-- ===== ホーム（ログイン/新規登録） ===== -->
 <section id="home" class="screen">
   <div class="hero">
     <h1>Unmei</h1>
@@ -219,12 +207,12 @@
   </div>
 </section>
 
-<!-- ===== メイン画面 ===== -->
+<!-- ===== メイン（ゲーム） ===== -->
 <section id="main" class="screen hidden">
   <div class="stage-wrap">
     <div class="stage" id="stage">
       <div class="account-chip" id="accountChip">未ログイン</div>
-<button id="openLogout" class="logout-btn" aria-label="ログアウト">ログアウト</button>
+      <button id="openLogout" class="logout-btn" aria-label="ログアウト">ログアウト</button>
 
       <h2 class="app-title">Unmei</h2>
       <p class="subtitle">出会いは偶然の音。恋はあなたが奏でる運命</p>
@@ -261,16 +249,29 @@
   </div>
 </section>
 
+<!-- ===== ログアウト確認画面（※scriptの外に置く！） ===== -->
+<section id="logout" class="screen hidden">
+  <div class="hero" style="gap:16px;">
+    <h1 style="font-size:clamp(40px,9vw,88px);">ログアウト</h1>
+    <div class="tagline">また会いましょう。次の一音は、きっとあなたが奏でる。</div>
+    <div class="divider"></div>
+    <div style="display:flex; gap:12px; margin-top:8px;">
+      <button id="doLogout" class="btn">ログアウトしてホームへ</button>
+      <button id="cancelLogout" class="btn ghost">キャンセル</button>
+    </div>
+  </div>
+</section>
+
 <script>
 (function(){
-  /* ===== 画面切替 ===== */
-  const home = document.getElementById('home');
-  const main = document.getElementById('main');
-  function goMain(){
-    home.classList.add('hidden');
-    main.classList.remove('hidden');
-    requestAnimationFrame(fitStage);
-  }
+  /* ===== 画面参照 ===== */
+  const home   = document.getElementById('home');
+  const main   = document.getElementById('main');
+  const logoutScr = document.getElementById('logout');
+
+  function goMain(){ home.classList.add('hidden'); logoutScr.classList.add('hidden'); main.classList.remove('hidden'); requestAnimationFrame(fitStage); }
+  function goHome(){ main.classList.add('hidden'); logoutScr.classList.add('hidden'); home.classList.remove('hidden'); }
+  function goLogout(){ home.classList.add('hidden'); main.classList.add('hidden'); logoutScr.classList.remove('hidden'); }
 
   /* ===== ステージ縮尺 ===== */
   const stage = document.getElementById('stage');
@@ -291,131 +292,98 @@
   const mbti  = ["INTJ","INFP","ENTP","ENFJ","ISTP","ISFP","ESTJ","ESFP","ISTJ","INFJ","ENTJ","ENFP","ISFJ","ESFJ","ESTP","INTP"];
   const countries = ["日本","韓国","フランス","イギリス","ドイツ","イタリア","アメリカ","ブラジル","エジプト","タイ","スペイン","カナダ","オーストラリア"];
 
-  /* ======= ホーム側（Auth） ======= */
-  const USERS_KEY = "unmeiUsers";
-  const CURRENT_ID_KEY = "unmeiCurrentUserId";
+  /* ===== Auth（localStorage） ===== */
+  const USERS_KEY="unmeiUsers", CURRENT_ID_KEY="unmeiCurrentUserId";
+  const $=(s)=>document.querySelector(s);
 
-  const $ = (sel)=>document.querySelector(sel);
-  const tabs = Array.from(document.querySelectorAll(".auth-tab"));
-  const paneLogin = $("#pane-login");
-  const paneRegister = $("#pane-register");
-  const loginSelect = $("#loginUser");
-  const doLoginBtn = $("#doLogin");
-  const delUserBtn = $("#deleteUser");
-  const curView = $("#currentUserView");
-  const regName = $("#regName");
-  const regAge = $("#regAge");
-  const regFace = $("#regFace");
-  const regMBTI = $("#regMBTI");
-  const regCountry = $("#regCountry");
-  const doRegisterBtn = $("#doRegister");
-  const toLoginBtn = $("#toLogin");
-  const accountChip = document.getElementById("accountChip");
+  const tabs=Array.from(document.querySelectorAll(".auth-tab"));
+  const paneLogin=$("#pane-login"), paneRegister=$("#pane-register");
+  const loginSelect=$("#loginUser"), doLoginBtn=$("#doLogin"), delUserBtn=$("#deleteUser");
+  const curView=$("#currentUserView");
+  const regName=$("#regName"), regAge=$("#regAge"), regFace=$("#regFace"), regMBTI=$("#regMBTI"), regCountry=$("#regCountry");
+  const doRegisterBtn=$("#doRegister"), toLoginBtn=$("#toLogin");
+  const accountChip=document.getElementById("accountChip");
+
+  const openLogoutBtn=document.getElementById('openLogout');
+  const doLogoutBtn=document.getElementById('doLogout');
+  const cancelLogoutBtn=document.getElementById('cancelLogout');
 
   function fillOptions(el, arr){
     el.innerHTML = '<option value="">（未設定）</option>' + arr.map(v=>`<option value="${v}">${v}</option>`).join('');
   }
-  fillOptions(regFace, faces);
-  fillOptions(regMBTI, mbti);
-  fillOptions(regCountry, countries);
+  fillOptions(regFace, faces); fillOptions(regMBTI, mbti); fillOptions(regCountry, countries);
 
   function loadUsers(){ try{ return JSON.parse(localStorage.getItem(USERS_KEY)||"[]"); }catch(_){ return []; } }
   function saveUsers(list){ localStorage.setItem(USERS_KEY, JSON.stringify(list)); }
-  function setCurrentId(id){ id? localStorage.setItem(CURRENT_ID_KEY, String(id)) : localStorage.removeItem(CURRENT_ID_KEY); }
+  function setCurrentId(id){ id? localStorage.setItem(CURRENT_ID_KEY,String(id)) : localStorage.removeItem(CURRENT_ID_KEY); }
   function getCurrentId(){ return localStorage.getItem(CURRENT_ID_KEY); }
   function getCurrentUser(){ const id=getCurrentId(); if(!id) return null; return loadUsers().find(u=>String(u.id)===String(id))||null; }
 
   function refreshLoginSelect(){
-    const users = loadUsers();
+    const users=loadUsers();
     loginSelect.innerHTML = users.length
       ? users.map(u=>`<option value="${u.id}">${u.displayName} (${u.country||'国籍不明'})</option>`).join('')
       : '<option value="">（ユーザー未登録）</option>';
   }
   function refreshCurrentView(){
-    const me = getCurrentUser();
+    const me=getCurrentUser();
     if(me){
-      curView.textContent = `ログイン中：${me.displayName} / ${me.age?me.age+'歳':'年齢:不明'} / ${me.face||'顔の系統:不明'} / ${me.mbti||'MBTI:不明'} / ${me.country||'国籍:不明'}`;
-      accountChip.textContent = me.displayName;
+      curView.textContent=`ログイン中：${me.displayName} / ${me.age?me.age+'歳':'年齢:不明'} / ${me.face||'顔の系統:不明'} / ${me.mbti||'MBTI:不明'} / ${me.country||'国籍:不明'}`;
+      accountChip.textContent=me.displayName;
     }else{
-      curView.textContent = '未ログイン';
-      accountChip.textContent = '未ログイン';
+      curView.textContent='未ログイン';
+      accountChip.textContent='未ログイン';
     }
   }
-
-  // 初期化
   refreshLoginSelect(); refreshCurrentView();
 
-  // タブ切替
   tabs.forEach(b=>{
     b.addEventListener('click', ()=>{
-      tabs.forEach(x=>x.classList.remove('active'));
-      b.classList.add('active');
-      const isLogin = b.dataset.tab==='login';
-      paneLogin.classList.toggle('active', isLogin);
-      paneRegister.classList.toggle('active', !isLogin);
+      tabs.forEach(x=>x.classList.remove('active')); b.classList.add('active');
+      const isLogin=b.dataset.tab==='login';
+      paneLogin.classList.toggle('active',isLogin);
+      paneRegister.classList.toggle('active',!isLogin);
     });
   });
   toLoginBtn.addEventListener('click', ()=> tabs.find(t=>t.dataset.tab==='login').click());
 
-  // 登録
   doRegisterBtn.addEventListener('click', ()=>{
-    const name = (regName.value||'').trim();
-    if(!name){ alert('表示名（偽名OK）を入力してください'); return; }
-    const age = regAge.value ? Math.max(0, Math.min(150, Number(regAge.value)|0)) : "";
-    const user = {
-      id: Date.now().toString(36)+Math.random().toString(36).slice(2,7),
-      displayName: name,
-      age: age ? String(age) : "",
-      face: regFace.value || "",
-      mbti: regMBTI.value || "",
-      country: regCountry.value || ""
-    };
-    const list = loadUsers(); list.push(user); saveUsers(list);
-    setCurrentId(user.id);
-    refreshLoginSelect(); refreshCurrentView();
-    alert('登録しました！ゲーム画面へ移動します。');
-    goMain();
+    const name=(regName.value||'').trim(); if(!name){ alert('表示名（偽名OK）を入力してください'); return; }
+    const age=regAge.value ? Math.max(0,Math.min(150, Number(regAge.value)|0)) : "";
+    const user={ id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+      displayName:name, age:age?String(age):"", face:regFace.value||"", mbti:regMBTI.value||"", country:regCountry.value||"" };
+    const list=loadUsers(); list.push(user); saveUsers(list);
+    setCurrentId(user.id); refreshLoginSelect(); refreshCurrentView();
+    alert('登録しました！ゲーム画面へ移動します。'); goMain();
   });
 
-  // ログイン
   doLoginBtn.addEventListener('click', ()=>{
-    const id = loginSelect.value;
-    if(!id){ alert('ユーザーを選択してください'); return; }
-    setCurrentId(id);
-    refreshCurrentView();
-    alert('ログインしました。ゲーム画面へ移動します。');
-    goMain();
+    const id=loginSelect.value; if(!id){ alert('ユーザーを選択してください'); return; }
+    setCurrentId(id); refreshCurrentView(); alert('ログインしました。ゲーム画面へ移動します。'); goMain();
   });
 
-  // ユーザー削除
   delUserBtn.addEventListener('click', ()=>{
-    const id = loginSelect.value;
-    if(!id){ alert('削除するユーザーを選択してください'); return; }
-    const list = loadUsers();
-    const idx = list.findIndex(u=>String(u.id)===String(id));
+    const id=loginSelect.value; if(!id){ alert('削除するユーザーを選択してください'); return; }
+    const list=loadUsers(); const idx=list.findIndex(u=>String(u.id)===String(id));
     if(idx>=0 && confirm(`本当に削除しますか？\n${list[idx].displayName}`)){
-      list.splice(idx,1); saveUsers(list);
-      if(getCurrentId()===id) setCurrentId(null);
-      refreshLoginSelect(); refreshCurrentView();
-      alert('削除しました');
+      list.splice(idx,1); saveUsers(list); if(getCurrentId()===id) setCurrentId(null);
+      refreshLoginSelect(); refreshCurrentView(); alert('削除しました');
     }
   });
 
   /* ===== メインのゲーム ===== */
-  const boxes = Array.from(document.querySelectorAll(".slot-box"));
-  const keys  = Array.from(document.querySelectorAll(".keys .key"));
-  const btn   = document.querySelector(".cta");
-  const bgm   = document.getElementById("bgm");
-  const line = document.getElementById("resultLine");
-  const summary = document.getElementById("resultSummary");
+  const boxes=[...document.querySelectorAll(".slot-box")];
+  const keys=[...document.querySelectorAll(".keys .key")];
+  const btn=document.querySelector(".cta"); const bgm=document.getElementById("bgm");
+  const line=document.getElementById("resultLine"); const summary=document.getElementById("resultSummary");
 
-  const cues = { line:1500, height:4200, face:7500, mbti:9800, age:12100, country:14500, summary:17500 };
-  const timeouts = []; const spinners = [];
-  function schedule(fn, d, s){ const h=setTimeout(fn, Math.max(0, s+d - performance.now())); timeouts.push(h); }
+  const cues={ line:1500, height:4200, face:7500, mbti:9800, age:12100, country:14500, summary:17500 };
+  const timeouts=[]; const spinners=[];
+  function schedule(fn,d,s){ const h=setTimeout(fn, Math.max(0, s+d - performance.now())); timeouts.push(h); }
   function clearAll(){ while(timeouts.length){ clearTimeout(timeouts.pop()); } spinners.splice(0).forEach(id=>clearInterval(id)); }
-  function flashKey(){ const k = keys[Math.floor(Math.random()*keys.length)]; if(!k) return; k.classList.add("flash"); setTimeout(()=>k.classList.remove("flash"),120); }
+  function flashKey(){ const k=keys[Math.floor(Math.random()*keys.length)]; if(!k) return; k.classList.add("flash"); setTimeout(()=>k.classList.remove("flash"),120); }
   function startSpin(){
-    boxes.forEach((box)=>{
+    boxes.forEach(box=>{
       box.classList.add("spinning");
       const id=setInterval(()=>{
         switch(box.dataset.field){
@@ -425,84 +393,72 @@
           case "age":     box.textContent=(18+Math.floor(Math.random()*23))+"歳"; break;
           case "country": box.textContent=countries[Math.floor(Math.random()*countries.length)]; break;
         }
-      }, 45);
+      },45);
       spinners.push(id);
     });
   }
-  function stopBox(i){
-    if(spinners[i]){ clearInterval(spinners[i]); spinners[i]=null; }
-    boxes[i].classList.remove("spinning"); boxes[i].classList.add("stopped");
-    flashKey(); return boxes[i].textContent;
-  }
+  function stopBox(i){ if(spinners[i]){ clearInterval(spinners[i]); spinners[i]=null; }
+    boxes[i].classList.remove("spinning"); boxes[i].classList.add("stopped"); flashKey(); return boxes[i].textContent; }
 
-  // マッチ計算（上位3人）
-  function calcMatchScore(me, u){
-    let score=0;
-    if(me&&u){
+  function calcMatchScore(me,u){
+    let score=0; if(me&&u){
       if(me.face&&u.face&&me.face===u.face) score+=30;
       if(me.mbti&&u.mbti&&me.mbti===u.mbti) score+=40;
       if(me.country&&u.country&&me.country===u.country) score+=20;
       const a=Number(me.age), b=Number(u.age); if(a&&b&&Math.abs(a-b)<=3) score+=10;
-    }
-    return score;
+    } return score;
   }
-  function rankTopMatches(me, k=3){
-    const others = loadUsers().filter(u=>!me || u.id!==me.id);
-    const scored = others.map(u=>({u, score:calcMatchScore(me,u)}));
-    scored.sort((a,b)=>b.score-a.score);
+  function rankTopMatches(me,k=3){
+    const others=loadUsers().filter(u=>!me || u.id!==me.id);
+    const scored=others.map(u=>({u, score:calcMatchScore(me,u)})).sort((a,b)=>b.score-a.score);
     return scored.slice(0,k);
   }
 
   async function runSequence(){
-    clearAll();
-    line.classList.remove("show"); summary.classList.remove("show"); summary.textContent="";
+    clearAll(); line.classList.remove("show"); summary.classList.remove("show"); summary.textContent="";
     boxes.forEach(b=>b.classList.remove("stopped"));
 
-    // BGM 準備
     await new Promise((resolve)=>{
       const ok=()=>{ bgm.removeEventListener("canplaythrough", ok); resolve(); };
       bgm.addEventListener("canplaythrough", ok, {once:true});
-      if (bgm.readyState>=3 || bgm.duration>0) resolve();
-      setTimeout(resolve, 600);
+      if(bgm.readyState>=3 || bgm.duration>0) resolve();
+      setTimeout(resolve,600);
     });
-
     try{ bgm.pause(); bgm.currentTime=0; await bgm.play(); }
     catch(e){ alert("再生がブロックされました。もう一度ボタンを押してください。"); return; }
 
-    startSpin();
-    const start = performance.now();
+    startSpin(); const start=performance.now();
     schedule(()=>{ line.classList.add("show"); }, cues.line, start);
 
-    const picked = {height:"",face:"",mbti:"",age:"",country:""};
-    schedule(()=>{ picked.height  = stopBox(0); }, cues.height,  start);
-    schedule(()=>{ picked.face    = stopBox(1); }, cues.face,    start);
-    schedule(()=>{ picked.mbti    = stopBox(2); }, cues.mbti,    start);
-    schedule(()=>{ picked.age     = stopBox(3); }, cues.age,     start);
-    schedule(()=>{ picked.country = stopBox(4); }, cues.country, start);
+    const picked={height:"",face:"",mbti:"",age:"",country:""};
+    schedule(()=>{ picked.height=stopBox(0); }, cues.height, start);
+    schedule(()=>{ picked.face=stopBox(1); }, cues.face, start);
+    schedule(()=>{ picked.mbti=stopBox(2); }, cues.mbti, start);
+    schedule(()=>{ picked.age=stopBox(3); }, cues.age, start);
+    schedule(()=>{ picked.country=stopBox(4); }, cues.country, start);
 
     schedule(()=>{
-      const label = `${picked.country} / ${picked.height} / ${picked.face} / ${picked.mbti} / ${picked.age}`;
-      const me = getCurrentUser();
-      const meLine = me ? `\n\nあなた（${me.displayName} / ${me.age?me.age+'歳':'年齢:不明'} / ${me.face||'顔:不明'} / ${me.mbti||'MBTI:不明'} / ${me.country||'国籍:不明'}）` : '';
+      const label=`${picked.country} / ${picked.height} / ${picked.face} / ${picked.mbti} / ${picked.age}`;
+      const me=getCurrentUser();
+      const meLine=me?`\n\nあなた（${me.displayName} / ${me.age?me.age+'歳':'年齢:不明'} / ${me.face||'顔:不明'} / ${me.mbti||'MBTI:不明'} / ${me.country||'国籍:不明'}）`:"";
 
       let top3Block='';
       if(me){
-        const top3 = rankTopMatches(me,3).filter(x=>x.u);
+        const top3=rankTopMatches(me,3).filter(x=>x.u);
         if(top3.length){
-          const lines = top3.map((it,i)=>{
+          const lines=top3.map((it,i)=>{
             const u=it.u; return ` ${i+1}. ${u.displayName}（${u.mbti||'MBTI不明'} / ${u.face||'顔:不明'} / ${u.country||'国籍:不明'}） - マッチ度：${it.score}%`;
           }).join('\n');
-          top3Block = `\n\n🎼 運命の旋律を奏でた相手（上位3人）\n${lines}`;
+          top3Block=`\n\n🎼 運命の旋律を奏でた相手（上位3人）\n${lines}`;
         }else{
-          top3Block = `\n\n💞 他の登録ユーザーがいません。`;
+          top3Block=`\n\n💞 他の登録ユーザーがいません。`;
         }
       }else{
-        top3Block = `\n\n💞 ログインして自分を登録すると、あなたに合う相手をご紹介できます。`;
+        top3Block=`\n\n💞 ログインして自分を登録すると、あなたに合う相手をご紹介できます。`;
       }
+      const ending=`\n\nこれは偶然の旋律か、\nそれとも──運命のデュエットか。`;
 
-      const ending = `\n\nこれは偶然の旋律か、\nそれとも──運命のデュエットか。`;
-
-      summary.textContent = `おめでとうございます！\n${label}\nが運命の相手です。` + meLine + top3Block + ending;
+      summary.textContent=`おめでとうございます！\n${label}\nが運命の相手です。`+meLine+top3Block+ending;
       summary.classList.add("show");
     }, cues.summary, start);
   }
@@ -513,21 +469,17 @@
     try{ await runSequence(); } finally{ setTimeout(()=>busy=false, 22000); }
   });
 
-  // もし既にログイン状態なら直接メインへ
+  /* ===== ログアウト動線 ===== */
+  openLogoutBtn.addEventListener('click', ()=> goLogout());
+  doLogoutBtn.addEventListener('click', ()=>{
+    setCurrentId(null); accountChip.textContent='未ログイン';
+    refreshLoginSelect(); refreshCurrentView(); goHome();
+  });
+  cancelLogoutBtn.addEventListener('click', ()=> goMain());
+
+  /* 既にログイン済みならメインへ */
   if(getCurrentUser()){ goMain(); }
 })();
-  <!-- ===== ログアウト画面 ===== -->
-<section id="logout" class="screen hidden">
-  <div class="hero" style="gap:16px;">
-    <h1 style="font-size:clamp(40px,9vw,88px);">ログアウト</h1>
-    <div class="tagline">また会いましょう。次の一音は、きっとあなたが奏でる。</div>
-    <div class="divider"></div>
-    <div style="display:flex; gap:12px; margin-top:8px;">
-      <button id="doLogout" class="btn">ログアウトしてホームへ</button>
-      <button id="cancelLogout" class="btn ghost">キャンセル</button>
-    </div>
-  </div>
-</section>
 </script>
 </body>
 </html>
