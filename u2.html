@@ -224,9 +224,10 @@
   <div class="stage-wrap">
     <div class="stage" id="stage">
       <div class="account-chip" id="accountChip">未ログイン</div>
+<button id="openLogout" class="logout-btn" aria-label="ログアウト">ログアウト</button>
 
       <h2 class="app-title">Unmei</h2>
-      <p class="subtitle">出会いが鳴り、恋が奏でる運命</p>
+      <p class="subtitle">出会いは偶然の音。恋はあなたが奏でる運命</p>
 
       <div class="slot" aria-live="polite">
         <div class="slot-box" data-field="height">身長</div>
@@ -515,6 +516,18 @@
   // もし既にログイン状態なら直接メインへ
   if(getCurrentUser()){ goMain(); }
 })();
+  <!-- ===== ログアウト画面 ===== -->
+<section id="logout" class="screen hidden">
+  <div class="hero" style="gap:16px;">
+    <h1 style="font-size:clamp(40px,9vw,88px);">ログアウト</h1>
+    <div class="tagline">また会いましょう。次の一音は、きっとあなたが奏でる。</div>
+    <div class="divider"></div>
+    <div style="display:flex; gap:12px; margin-top:8px;">
+      <button id="doLogout" class="btn">ログアウトしてホームへ</button>
+      <button id="cancelLogout" class="btn ghost">キャンセル</button>
+    </div>
+  </div>
+</section>
 </script>
 </body>
 </html>
