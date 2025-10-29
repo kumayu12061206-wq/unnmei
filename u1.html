@@ -14,6 +14,8 @@
   :root { --gold:#ffd700; }
 
   /* === 全体レイアウト：左にゲーム、右に認証パネル === */
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
   body{
     margin:0;
     background:#000;
@@ -31,7 +33,7 @@
   /* 左：ステージ（縮尺フィット） */
   .stage-wrap{
     position:relative;
-    flex:1 1 auto;           /* 余白は全部こちらへ */
+    flex:1 1 auto;
     width:100%;
     height:100%;
     overflow:hidden;
@@ -174,8 +176,8 @@
 
         <button class="cta" aria-label="運命を奏でる（スタート）">運命を奏でる</button>
 
-        <!--  同階層に置いたMP3 -->
-        <audio id="bgm" preload="auto">
+        <!--  同階層に置いたMP3（既定）。playsinlineでiOS対策 -->
+        <audio id="bgm" preload="auto" playsinline>
           <source src="beethoven_symphony5_1.mp3" type="audio/mpeg" />
         </audio>
 
@@ -217,13 +219,28 @@
           <button id="deleteUser" class="side-btn ghost">選択ユーザー削除</button>
         </div>
         <div class="current" id="currentUserView">未ログイン</div>
+
+        <hr style="width:100%; border:0; border-top:1px solid rgba(255,215,0,.15); margin:12px 0 6px;">
+        <h2 style="font-size:18px; margin:0 0 6px;">BGM</h2>
+        <div class="field">
+          <label>MP3ファイルを選択（端末内）：</label>
+          <input id="bgmFile" type="file" accept="audio/*" />
+        </div>
+        <div class="field">
+          <label>MP3のURLを入力（https://〜）：</label>
+          <div style="display:flex; gap:8px;">
+            <input id="bgmUrl" type="url" placeholder="https://example.com/fate.mp3" />
+            <button id="loadUrl" class="side-btn">読込</button>
+          </div>
+          <p class="note">※ GitHub Pages 等はCORSで再生不可のことがあります。その場合はファイル選択を使ってください。</p>
+        </div>
       </div>
 
       <!-- 新規登録 -->
       <div id="pane-register" class="pane hidden">
         <div class="field">
           <label>表示名（偽名OK）</label>
-          <input id="regName" type="text" placeholder="例：有薄/ 朱優夏" />
+          <input id="regName" type="text" placeholder="例：あゆ🍀 / Kuma" />
         </div>
         <div class="field">
           <label>年齢</label>
@@ -255,15 +272,17 @@
   /* ===== ステージを常に画面内に収めるスケーリング ===== */
   const stage = document.getElementById('stage');
   const BASE_W = 1280, BASE_H = 720;
+
   function fitStage(){
-    // 右のサイドバーを含めたウィンドウサイズに対して縮尺計算
-    const sw = stage.parentElement.clientWidth;  // 左カラムの幅だけを使う
-    const sh = stage.parentElement.clientHeight; // 左カラムの高さ
+    const wrap = stage.parentElement;
+    const sw = wrap.clientWidth;
+    const sh = wrap.clientHeight;
     const scale = Math.min(sw / BASE_W, sh / BASE_H);
     stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
   }
   window.addEventListener('resize', fitStage);
   window.addEventListener('orientationchange', fitStage);
+  new ResizeObserver(fitStage).observe(stage.parentElement);
   fitStage();
 
   /* ===== データ ===== */
@@ -278,6 +297,36 @@
   const bgm   = document.getElementById("bgm");
   const line = document.getElementById("resultLine");
   const summary = document.getElementById("resultSummary");
+
+  // BGM 取り込みUI
+  const bgmFile = document.getElementById('bgmFile');
+  const bgmUrl  = document.getElementById('bgmUrl');
+  const loadUrlBtn = document.getElementById('loadUrl');
+  const BGM_URL_KEY = 'unmeiBgmUrl';
+  const lastUrl = localStorage.getItem(BGM_URL_KEY) || '';
+  if (lastUrl) bgmUrl.value = lastUrl;
+
+  function setBgmSrc(src, {persist=false} = {}){
+    if (!src) return;
+    try{ bgm.pause(); }catch(_){}
+    bgm.removeAttribute('src');
+    bgm.src = src;
+    bgm.load();
+    if (persist) localStorage.setItem(BGM_URL_KEY, src);
+  }
+  bgmFile.addEventListener('change', ()=>{
+    const f = bgmFile.files && bgmFile.files[0];
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    setBgmSrc(url, {persist:false});
+  });
+  loadUrlBtn.addEventListener('click', ()=>{
+    const url = (bgmUrl.value || '').trim();
+    if (!url) return;
+    try{ new URL(url); }catch(_){ alert('正しいURLを入力してください'); return; }
+    setBgmSrc(url, {persist:true});
+    alert('BGMのURLを読み込みました');
+  });
 
   const cues = {
     line:     1500,   // あなたの運命の相手は...
@@ -403,6 +452,8 @@
       const tab = btn.dataset.tab;
       paneLogin.classList.toggle('hidden', tab!=='login');
       paneRegister.classList.toggle('hidden', tab!=='register');
+      // パネル高さ変化でもステージ縮尺を更新
+      requestAnimationFrame(fitStage);
     });
   });
 
@@ -422,10 +473,8 @@
     const list = loadUsers(); list.push(user); saveUsers(list);
     setCurrentId(user.id);
     refreshLoginSelect(); refreshCurrentView();
-    // フィールド軽くクリア
     regName.value = ""; regAge.value=""; regFace.value=""; regMBTI.value=""; regCountry.value="";
     alert('登録しました！ログイン状態になりました。');
-    // ログインタブへ
     document.querySelector('.tab[data-tab="login"]').click();
   });
 
@@ -438,7 +487,7 @@
     alert('ログインしました');
   });
 
-  // ユーザー削除（選択中）
+  // ユーザー削除
   delUserBtn.addEventListener('click', ()=>{
     const id = loginSelect.value;
     if(!id){ alert('削除するユーザーを選択してください'); return; }
@@ -459,6 +508,26 @@
     refreshCurrentView();
     alert('ログアウトしました');
   });
+
+  /* ===== マッチ計算（上位3人） ===== */
+  function calcMatchScore(me, u){
+    // 100点満点：顔30 / MBTI40 / 国籍20 / 年齢差±3歳 10
+    let score = 0;
+    if(me && u){
+      if(me.face && u.face && me.face === u.face) score += 30;
+      if(me.mbti && u.mbti && me.mbti === u.mbti) score += 40;
+      if(me.country && u.country && me.country === u.country) score += 20;
+      const a = Number(me.age), b = Number(u.age);
+      if(a && b && Math.abs(a - b) <= 3) score += 10;
+    }
+    return score;
+  }
+  function rankTopMatches(me, k=3){
+    const candidates = loadUsers().filter(u => !me || u.id !== me.id);
+    const scored = candidates.map(u => ({ u, score: calcMatchScore(me,u) }));
+    scored.sort((a,b)=> b.score - a.score);
+    return scored.slice(0, k);
+  }
 
   /* ===== ゲーム進行 ===== */
   async function runSequence(){
@@ -500,13 +569,38 @@
     schedule(()=>{
       const label = `${picked.country} / ${picked.height} / ${picked.face} / ${picked.mbti} / ${picked.age}`;
 
-      // ログイン中ユーザーを結果に添える
+      // 自分情報
       const me = getCurrentUser();
       const meLine = me
-        ? `\n\nあなた（${me.displayName} / ${me.age?me.age+'歳':'年齢:不明'} / ${me.face||'顔の系統:不明'} / ${me.mbti||'MBTI:不明'} / ${me.country||'国籍:不明'}）`
+        ? `\n\nあなた（${me.displayName} / ${me.age?me.age+'歳':'年齢:不明'} / ${me.face||'顔:不明'} / ${me.mbti||'MBTI:不明'} / ${me.country||'国籍:不明'}）`
         : '';
 
-      summary.textContent = `おめでとうございます！\n${label}\nが運命の相手です。${meLine}`;
+      // 上位3人
+      let top3Block = '';
+      if(me){
+        const top3 = rankTopMatches(me, 3).filter(item => item.u); // 念のため
+        if(top3.length){
+          const lines = top3.map((item, idx)=>{
+            const u = item.u;
+            return ` ${idx+1}. ${u.displayName}（${u.mbti||'MBTI不明'} / ${u.face||'顔:不明'} / ${u.country||'国籍:不明'}） - マッチ度：${item.score}%`;
+          }).join('\n');
+          top3Block =
+            `\n\n🎼 運命の旋律を奏でた相手（上位3人）\n` +
+            lines;
+        }else{
+          top3Block = `\n\n💞 他の登録ユーザーがいません。`;
+        }
+      }else{
+        top3Block = `\n\n💞 ログインして自分を登録すると、あなたに合う相手をご紹介できます。`;
+      }
+
+      // エンディング
+      const ending = `\n\nこれは偶然の旋律か、\nそれとも──運命のデュエットか。`;
+
+      summary.textContent =
+        `おめでとうございます！\n${label}\nが運命の相手です。` +
+        meLine + top3Block + ending;
+
       summary.classList.add("show");
     }, cues.summary, start);
   }
