@@ -606,10 +606,13 @@
   });
   cancelLogoutBtn.addEventListener('click', ()=> goMain());
 
+ 
   /* 既にログイン済みならメインへ */
   if(getCurrentUser()){ goMain(); }
 })();
-  <!-- ===== チャットページ ===== -->
+</script>
+
+<!-- ===== チャットページ ===== -->
 <section id="chat" class="screen hidden">
   <div class="hero" style="gap:10px; width:100%; max-width:600px;">
     <h1 id="chatName">💌 メッセージ</h1>
@@ -633,7 +636,7 @@
 </style>
 
 <script>
-/* ===== チャットと紹介機能の拡張 ===== */
+/* ===== チャットと紹介機能の拡張（別スクリプト） ===== */
 (function(){
   const intro = document.getElementById('intro');
   const chat = document.getElementById('chat');
@@ -642,10 +645,13 @@
   const chatWindow = document.getElementById('chatWindow');
   const chatInput = document.getElementById('chatInput');
   const sendMsgBtn = document.getElementById('sendMsg');
+
+  // 「もっと見る」ボタンを最後のdividerの直後に追加
   const moreBtn = document.createElement('button');
-  moreBtn.textContent = 'もっと見る';
+  moreBtn.textContent = 'もっと見る（次の3人）';
   moreBtn.className = 'btn';
-  document.querySelector('#intro .divider:last-of-type').after(moreBtn);
+  const lastDivider = document.querySelector('#intro .divider:last-of-type');
+  if (lastDivider) lastDivider.after(moreBtn);
 
   const USERS_KEY="unmeiUsers", MSGS_KEY="unmeiMsgs";
   const defaultAvatar = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="black"/><circle cx="150" cy="120" r="70" fill="#333"/><rect x="60" y="200" width="180" height="80" rx="40" fill="#333"/></svg>`);
@@ -674,7 +680,7 @@
     return arr;
   }
 
-  /* ===== 紹介ページの描画 ===== */
+  /* ===== 紹介カード描画 ===== */
   function renderIntro(list){
     introCards.innerHTML='';
     list.forEach(u=>{
@@ -703,11 +709,16 @@
     });
   }
 
-  /* ===== チャットページ ===== */
+  /* ===== チャット画面 ===== */
   let currentPartner = null;
   function goChat(u){
+    // 画面切替
+    document.getElementById('main').classList.add('hidden');
+    document.getElementById('home').classList.add('hidden');
+    document.getElementById('logout').classList.add('hidden');
     intro.classList.add('hidden');
     chat.classList.remove('hidden');
+
     currentPartner=u;
     document.getElementById('chatName').textContent=`💌 ${u.displayName} とのチャット`;
     renderChat();
@@ -729,13 +740,13 @@
     chatWindow.scrollTop=chatWindow.scrollHeight;
   }
 
-  sendMsgBtn.addEventListener('click',()=>{
+  document.getElementById('sendMsg').addEventListener('click',()=>{
     const text=chatInput.value.trim();
     if(!text) return;
     const box=loadMsgs();
     box[currentPartner.id]=box[currentPartner.id]||[];
     box[currentPartner.id].push({from:'me',text});
-    // 相手の自動返信
+    // 自動返信
     setTimeout(()=>{
       box[currentPartner.id].push({from:'them',text:'ありがとう💫'});
       saveMsgs(box);
@@ -746,21 +757,21 @@
     renderChat();
   });
 
-  backToIntro.addEventListener('click',()=>{
+  document.getElementById('backToIntro').addEventListener('click',()=>{
     chat.classList.add('hidden');
     intro.classList.remove('hidden');
   });
 
-  /* ===== 初回表示（自動生成） ===== */
+  // 初回：ログイン有無に関係なくランダム3人で埋める
   let currentList=generateFakeProfiles(3);
   renderIntro(currentList);
+
+  // もっと見る→新しい3人に差替え
   moreBtn.addEventListener('click',()=>{
     currentList=generateFakeProfiles(3);
     renderIntro(currentList);
   });
 })();
-</script>
-  
 </script>
 </body>
 </html>
