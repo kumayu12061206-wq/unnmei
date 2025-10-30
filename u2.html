@@ -309,9 +309,9 @@
 <script>
 (function(){
   /* ===== 画面参照 ===== */
-  const home   = document.getElementById('home');
-  const main   = document.getElementById('main');
-  const intro  = document.getElementById('intro');
+  const home = document.getElementById('home');
+  const main = document.getElementById('main');
+  const intro = document.getElementById('intro');
   const logoutScr = document.getElementById('logout');
 
   function goMain(){ home.classList.add('hidden'); intro.classList.add('hidden'); logoutScr.classList.add('hidden'); main.classList.remove('hidden'); requestAnimationFrame(fitStage); }
@@ -339,7 +339,7 @@
 
   /* ===== データ ===== */
   const faces = ["しお顔","ソース顔","とんこつ顔","砂糖顔","しょうゆ顔","塩バター顔"];
-  const mbti  = ["INTJ","INFP","ENTP","ENFJ","ISTP","ISFP","ESTJ","ESFP","ISTJ","INFJ","ENTJ","ENFP","ISFJ","ESFJ","ESTP","INTP"];
+  const mbti = ["INTJ","INFP","ENTP","ENFJ","ISTP","ISFP","ESTJ","ESFP","ISTJ","INFJ","ENTJ","ENFP","ISFJ","ESFJ","ESTP","INTP"];
   const countries = ["日本","韓国","フランス","イギリス","ドイツ","イタリア","アメリカ","ブラジル","エジプト","タイ","スペイン","カナダ","オーストラリア"];
   const defaultAvatar = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="black"/><circle cx="150" cy="120" r="70" fill="#333"/><rect x="60" y="200" width="180" height="80" rx="40" fill="#333"/></svg>`);
 
@@ -468,10 +468,10 @@
       box.classList.add("spinning");
       const id=setInterval(()=>{
         switch(box.dataset.field){
-          case "height":  box.textContent=(150+Math.floor(Math.random()*51))+"cm"; break;
-          case "face":    box.textContent=faces[Math.floor(Math.random()*faces.length)]; break;
-          case "mbti":    box.textContent=mbti[Math.floor(Math.random()*mbti.length)]; break;
-          case "age":     box.textContent=(18+Math.floor(Math.random()*23))+"歳"; break;
+          case "height": box.textContent=(150+Math.floor(Math.random()*51))+"cm"; break;
+          case "face": box.textContent=faces[Math.floor(Math.random()*faces.length)]; break;
+          case "mbti": box.textContent=mbti[Math.floor(Math.random()*mbti.length)]; break;
+          case "age": box.textContent=(18+Math.floor(Math.random()*23))+"歳"; break;
           case "country": box.textContent=countries[Math.floor(Math.random()*countries.length)]; break;
         }
       },45);
@@ -774,4 +774,4 @@
 })();
 </script>
 </body>
-</html>
+</html>  
