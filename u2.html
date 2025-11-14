@@ -127,33 +127,47 @@
   .key.black{ width:42px; height:180px; background:linear-gradient(to bottom,#111,#000); margin:0 -21px; z-index:2; border-color:#222; box-shadow:0 4px 10px rgba(0,0,0,.35); }
   .flash{ box-shadow:0 0 22px rgba(216,189,106,.9)!important; filter:brightness(2) saturate(1.2); }
 
-  .footer-note{ position:absolute; left:50%; bottom:8px; transform:translateX(-50%); font-size:14px; opacity:.85; }
-  .result-line, .result-summary{
-    position:absolute; left:50%; transform:translateX(-50%); text-shadow:0 0 18px rgba(216,189,106,.9);
-    opacity:0; transition:opacity .9s ease; text-align:center; white-space:pre-wrap; letter-spacing:2px;
+  .footer-note{
+    position:absolute;
+    left:50%;
+    bottom:8px;
+    transform:translateX(-50%);
+    font-size:14px;
+    opacity:.85;
   }
-  .result-line, .result-summary{
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
-  text-shadow:0 0 18px rgba(216,189,106,.9);
-  opacity:0;
-  transition:opacity .9s ease;
-  text-align:center;
-  white-space:pre-wrap;
-  letter-spacing:2px;
 
-  /* ここから追加 */
-  background:rgba(0,0,0,0.65);
-  padding:10px 18px;
-  border-radius:14px;
-  border:1px solid rgba(216,189,106,.35);
-}
+  /* ===== 結果テキスト（薄黒背景＋金の枠） ===== */
+  .result-line,
+  .result-summary{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    text-shadow:0 0 18px rgba(216,189,106,.9);
+    opacity:0;
+    transition:opacity .9s ease;
+    text-align:center;
+    white-space:pre-wrap;
+    letter-spacing:2px;
 
-/* 位置と文字サイズはそのまま */
-.result-line{ top:460px; font-size:28px; }
-.result-summary{ top:520px; font-size:22px; }
+    background:rgba(0,0,0,0.65);          /* 薄黒背景 */
+    padding:10px 18px;                    /* 余白 */
+    border-radius:14px;                   /* 角丸 */
+    border:1px solid rgba(216,189,106,.35); /* うすい金枠 */
+  }
 
+  .result-line{
+    top:460px;
+    font-size:28px;
+  }
+
+  .result-summary{
+    top:520px;
+    font-size:22px;
+  }
+
+  .show{
+    opacity:1;
+  }
 
   /* 右上：アカウント名とログアウト */
   .account-chip{
@@ -375,13 +389,13 @@
   const doRegisterBtn=$("#doRegister"), toLoginBtn=$("#toLogin");
   const accountChip=document.getElementById("accountChip");
 
-  const openLogoutBtn=document.getElementById('openLogout');
-  const doLogoutBtn=document.getElementById('doLogout');
-  const cancelLogoutBtn=document.getElementById('cancelLogout');
-
   const introCards = document.getElementById('introCards');
   const backToMain = document.getElementById('backToMain');
   const backToHome = document.getElementById('backToHome');
+
+  const openLogoutBtn=document.getElementById('openLogout');
+  const doLogoutBtn=document.getElementById('doLogout');
+  const cancelLogoutBtn=document.getElementById('cancelLogout');
 
   function fillOptions(el, arr){
     el.innerHTML = '<option value="">（未設定）</option>' + arr.map(v=>`<option value="${v}">${v}</option>`).join('');
@@ -474,8 +488,9 @@
   /* ===== メインのゲーム ===== */
   const boxes=[...document.querySelectorAll(".slot-box")];
   const keys=[...document.querySelectorAll(".keys .key")];
-  const btn=document.querySelector(".cta"); const bgm=document.getElementById("bgm");
-  const line=document.getElementById("resultLine"); const summary=document.getElementById("resultSummary");
+  const bgm=document.getElementById("bgm");
+  const line=document.getElementById("resultLine");
+  const summary=document.getElementById("resultSummary");
 
   const cues={ line:1500, height:4200, face:7500, mbti:9800, age:12100, country:14500, summary:17500 };
   const timeouts=[]; const spinners=[];
@@ -497,8 +512,10 @@
       spinners.push(id);
     });
   }
-  function stopBox(i){ if(spinners[i]){ clearInterval(spinners[i]); spinners[i]=null; }
-    boxes[i].classList.remove("spinning"); boxes[i].classList.add("stopped"); flashKey(); return boxes[i].textContent; }
+  function stopBox(i){
+    if(spinners[i]){ clearInterval(spinners[i]); spinners[i]=null; }
+    boxes[i].classList.remove("spinning"); boxes[i].classList.add("stopped"); flashKey(); return boxes[i].textContent;
+  }
 
   function calcMatchScore(me,u){
     let score=0; if(me&&u){
@@ -625,7 +642,6 @@
   });
   cancelLogoutBtn.addEventListener('click', ()=> goMain());
 
- 
   /* 既にログイン済みならメインへ */
   if(getCurrentUser()){ goMain(); }
 })();
@@ -759,7 +775,7 @@
     chatWindow.scrollTop=chatWindow.scrollHeight;
   }
 
-  document.getElementById('sendMsg').addEventListener('click',()=>{
+  sendMsgBtn.addEventListener('click',()=>{
     const text=chatInput.value.trim();
     if(!text) return;
     const box=loadMsgs();
@@ -776,7 +792,7 @@
     renderChat();
   });
 
-  document.getElementById('backToIntro').addEventListener('click',()=>{
+  backToIntro.addEventListener('click',()=>{
     chat.classList.add('hidden');
     intro.classList.remove('hidden');
   });
@@ -793,4 +809,4 @@
 })();
 </script>
 </body>
-</html>  
+</html>
